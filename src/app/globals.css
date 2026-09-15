@@ -1,26 +1,119 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-cream: #f5f0e6;
+  --color-paper: #eee8dc;
+  --color-ink: #111111;
+  --color-black-deep: #101010;
+  --color-black-secondary: #181818;
+
+  --color-coral: #ff735e;
+  --color-yellow: #ffd928;
+  --color-blue: #4a73ff;
+  --color-purple: #8c5cff;
+  --color-lime: #a7d948;
+  --color-orange: #ff8a3d;
+
+  --font-display: var(--font-display-var);
+  --font-hand: var(--font-hand-var);
+  --font-sans: var(--font-sans-var);
+  --font-serif: var(--font-serif-var);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-ink);
+}
+
+/* Custom cursor: hide the native cursor only on fine-pointer devices that get the dot. */
+@media (hover: hover) and (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float {
+  animation: float-y 5s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+.animate-wiggle {
+  animation: wiggle 3.2s ease-in-out infinite;
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-1.5deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(1.5deg) translateY(-3px);
+  }
+}
+.animate-sway {
+  animation: sway 6s ease-in-out infinite;
+}
+
+@keyframes blink-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(4px);
+  }
+}
+.animate-scroll-dot {
+  animation: blink-dot 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-wiggle,
+  .animate-sway,
+  .animate-scroll-dot {
+    animation: none !important;
+  }
 }
