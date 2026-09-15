@@ -103,8 +103,8 @@ export const templates: Template[] = [
     liveDemoUrl: "https://noire-dining.netlify.app",
     purchaseUrl: "#purchase-noire",
     heroVideo: "/market/noire/hero/noire-hero.mp4",
-    heroPoster: "/market/noire/desktop-home.png",
-    previewImage: "/market/noire/desktop-home.png",
+    heroPoster: "/market/noire/gallery/desktop-homepage.png",
+    previewImage: "/market/noire/gallery/desktop-homepage.png",
     mobileImage: "/market/noire/template-mobile/mobile-home.png",
     gallery: [
       { src: "/market/noire/gallery/desktop-homepage.png", label: "Homepage" },
