@@ -2,12 +2,11 @@
 
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import BrowserPreview from "./BrowserPreview";
 import RunningDog from "./RunningDog";
 import HandwrittenNote from "@/components/ui/HandwrittenNote";
 import PillButton from "@/components/ui/PillButton";
-import { useMagnetic } from "@/components/ui/useMagnetic";
 import {
   CircleDoodle,
   CrossDoodle,
@@ -136,7 +135,10 @@ export default function Hero() {
               Explore Collection
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </PillButton>
-            <WatchIntroButton />
+            <PillButton href="/custom-website" variant="outline" cursorLabel="view" className="py-3.5">
+              <Sparkles className="h-4 w-4" />
+              Custom Website
+            </PillButton>
           </motion.div>
         </motion.div>
 
@@ -164,27 +166,5 @@ export default function Hero() {
         <span className="h-1.5 w-1.5 rounded-full bg-ink/60 animate-scroll-dot" />
       </div>
     </section>
-  );
-}
-
-function WatchIntroButton() {
-  const ref = useRef<HTMLButtonElement | null>(null);
-  const magnetic = useMagnetic(ref);
-
-  return (
-    <motion.button
-      ref={ref}
-      onMouseMove={magnetic.onMouseMove}
-      onMouseLeave={magnetic.onMouseLeave}
-      style={magnetic.style}
-      type="button"
-      data-cursor="view"
-      className="group inline-flex items-center gap-2.5 rounded-full border border-ink/25 bg-cream px-6 py-3.5 text-sm font-semibold text-ink transition-colors hover:border-ink"
-    >
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink text-cream transition-transform duration-300 group-hover:scale-110">
-        <Play className="h-2.5 w-2.5 fill-current" />
-      </span>{" "}
-      Watch Intro
-    </motion.button>
   );
 }

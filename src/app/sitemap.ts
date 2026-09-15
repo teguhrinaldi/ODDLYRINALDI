@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { templates } from "@/data/templates";
-import { journalArticles } from "@/data/journal";
+import { journalArticles, templateStories } from "@/data/journal";
 import { site } from "@/data/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -30,5 +30,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(a.date),
   }));
 
-  return [...staticRoutes, ...templateRoutes, ...journalRoutes];
+  const templateStoryRoutes = templateStories.map((s) => ({
+    url: `${site.url}/journal/${s.slug}`,
+    lastModified: new Date(s.date),
+  }));
+
+  return [...staticRoutes, ...templateRoutes, ...journalRoutes, ...templateStoryRoutes];
 }

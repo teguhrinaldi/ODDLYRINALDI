@@ -1,74 +1,68 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import JournalHero from "@/components/journal/JournalHero";
+import JournalManifesto from "@/components/journal/JournalManifesto";
+import JournalBeliefs from "@/components/journal/JournalBeliefs";
+import TemplateStoryCard from "@/components/journal/TemplateStoryCard";
+import StudioNoteRow from "@/components/journal/StudioNoteRow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { StarDoodle, SparkleDoodle } from "@/components/ui/Doodles";
-import { journalArticles } from "@/data/journal";
+import { StarDoodle } from "@/components/ui/Doodles";
+import { journalArticles, templateStories } from "@/data/journal";
 import { site } from "@/data/site";
 
 export const metadata: Metadata = {
-  title: "Journal",
-  description: "Notes on design, code, and the small decisions behind each template.",
+  title: "The Soul Behind the Screen",
+  description:
+    "Explore the ideas, visual languages, and design philosophies behind Oddlyrinaldi's website templates.",
   alternates: { canonical: `${site.url}/journal` },
 };
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
 export default function JournalPage() {
+  const [featured, ...rest] = templateStories;
+
   return (
     <>
       <Navbar />
       <main className="pt-16 sm:pt-20">
-        <section className="relative overflow-hidden bg-cream py-16 sm:py-20 lg:py-24">
-          <StarDoodle className="pointer-events-none absolute right-[10%] top-16 hidden h-6 w-6 text-yellow/70 lg:block" />
-          <SparkleDoodle className="pointer-events-none absolute left-[6%] top-28 hidden h-5 w-5 text-purple/60 md:block" />
+        <JournalHero />
+
+        <JournalManifesto />
+
+        <section className="relative overflow-hidden border-t border-ink/10 bg-cream py-16 sm:py-20 lg:py-24">
+          <StarDoodle className="pointer-events-none absolute right-[6%] top-10 hidden h-5 w-5 text-yellow/70 lg:block" />
           <div className="mx-auto max-w-350 px-5 sm:px-8 lg:px-12">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-ink/50">
-              Journal
-            </p>
-            <h1 className="mt-4 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-5xl">
-              Notes on design, code, and the
-              <br />
-              small decisions behind each template.
-            </h1>
+            <div className="flex items-baseline gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-ink/50">
+                Template Stories
+              </p>
+              <span className="font-hand text-lg text-coral">a website with a point of view</span>
+            </div>
+            <h2 className="mt-3 max-w-xl font-display text-3xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-4xl">
+              Ten templates. Ten different worlds.
+            </h2>
+
+            <div className="mt-14 flex flex-col gap-20 sm:gap-24">
+              {featured && <TemplateStoryCard story={featured} featured />}
+              {rest.map((story, i) => (
+                <TemplateStoryCard key={story.slug} story={story} reverse={i % 2 === 1} />
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="border-t border-ink/10 bg-cream pb-20 sm:pb-24">
+        <JournalBeliefs />
+
+        <section className="border-t border-ink/10 bg-cream py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-350 px-5 sm:px-8 lg:px-12">
-            <ul className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-ink/50">Studio Notes</p>
+            <div className="mt-3 flex items-baseline gap-3">
+              <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+                Notes on design, code, and the small decisions behind each template.
+              </h2>
+            </div>
+            <ul className="mt-10 max-w-3xl">
               {journalArticles.map((article) => (
-                <li key={article.slug}>
-                  <Link
-                    href={`/journal/${article.slug}`}
-                    data-cursor="read"
-                    className="group block"
-                  >
-                    <div
-                      className="aspect-[4/3] overflow-hidden rounded-xl border border-ink/10"
-                      style={{ backgroundColor: article.coverTint }}
-                    />
-                    <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-ink/45">
-                      {article.category} · {formatDate(article.date)}
-                    </p>
-                    <h2 className="mt-2 font-display text-xl font-bold leading-snug text-ink transition-colors group-hover:text-coral">
-                      {article.title}
-                    </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-ink/60">
-                      {article.excerpt}
-                    </p>
-                    <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-ink/50">
-                      {article.readingTime} <ArrowUpRight className="h-3 w-3" />
-                    </span>
-                  </Link>
-                </li>
+                <StudioNoteRow key={article.slug} article={article} />
               ))}
             </ul>
           </div>
