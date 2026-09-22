@@ -38,7 +38,7 @@ export default function JournalPage() {
               <span className="font-hand text-lg text-coral">a website with a point of view</span>
             </div>
             <h2 className="mt-3 max-w-xl font-display text-3xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-4xl">
-              Ten templates. Ten different worlds.
+              Twelve templates. Twelve different worlds.
             </h2>
 
             <div className="mt-14 flex flex-col gap-20 sm:gap-24">

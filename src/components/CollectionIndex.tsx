@@ -8,7 +8,8 @@ import HandwrittenNote from "@/components/ui/HandwrittenNote";
 import { CurvedArrowDoodle, DashDoodle, SparkleDoodle, StarDoodle } from "@/components/ui/Doodles";
 import { accentHex, Template, templates } from "@/data/templates";
 
-const columns = [templates.slice(0, 5), templates.slice(5, 10)];
+const half = Math.ceil(templates.length / 2);
+const columns = [templates.slice(0, half), templates.slice(half)];
 
 export default function CollectionIndex() {
   const [hovered, setHovered] = useState<Template | null>(null);

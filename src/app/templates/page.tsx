@@ -11,7 +11,7 @@ import { site } from "@/data/site";
 export const metadata: Metadata = {
   title: "Templates",
   description:
-    "10 unique website templates, each its own visual world — browse the full ODDLYRINALDI collection.",
+    "12 unique website templates, each its own visual world — browse the full ODDLYRINALDI collection.",
   alternates: { canonical: `${site.url}/templates` },
 };
 
@@ -33,7 +33,7 @@ export default function TemplatesPage() {
               </HandwrittenNote>
             </div>
             <h1 className="mt-4 max-w-2xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-5xl">
-              10 templates. 10 personalities.
+              12 templates. 12 personalities.
             </h1>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-ink/60">
               Every template is its own visual world — pick the one that

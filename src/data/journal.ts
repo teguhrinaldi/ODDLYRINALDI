@@ -563,6 +563,90 @@ export const templateStories: TemplateStory[] = [
     ],
     closingThought: "LUMORA makes a cut feel like a ritual, not a transaction.",
   },
+  {
+    slug: "neural-a-dashboard-that-stays-out-of-the-way",
+    templateSlug: "neural",
+    eyebrow: "SaaS / Project Management",
+    headline: "A Dashboard That Stays Out of the Way",
+    excerpt:
+      "NEURAL isn't trying to look exciting. It's trying to answer 'what needs me right now' in under five seconds.",
+    date: "2026-05-17",
+    readingTime: "4 min read",
+    philosophy: "A team's dashboard should feel calmer than the team's actual week.",
+    intro:
+      "Most dashboard templates are designed to look good in a screenshot — big charts, lots of color, a hero stat nobody checks twice. NEURAL came out of the opposite question: what does this look like on a Tuesday at 9am when someone's actually behind on something?",
+    sections: [
+      {
+        heading: "The Idea",
+        paragraphs: [
+          "NEURAL leads with the stuff that's actually overdue. Before any chart, there's a plain banner telling you three tasks need attention, with a button to go fix them. No dashboard should bury the bad news under the pretty numbers.",
+          "Everything else — active projects, completed tasks, workload — is one glance away, not one click away. It's built for someone who opens this fifteen times a day, not once a week.",
+        ],
+      },
+      {
+        heading: "The Visual Language",
+        paragraphs: [
+          "Dark by default, with a single teal accent doing all the work — active nav item, primary buttons, the completed line on the chart. Nothing else competes for attention.",
+          "The workload panel is basically just names and progress bars, on purpose. You don't need a chart to tell you Ethan has seven active tasks and Amara has three. Just say it.",
+        ],
+      },
+      {
+        heading: "The Interaction",
+        paragraphs: [
+          "The one thing we spent real time on is the workload overview — it's meant to answer 'who's overloaded' before a stand-up even has to ask. That's a small feature that saves an actual meeting.",
+        ],
+      },
+      {
+        heading: "Who It Is For",
+        paragraphs: [
+          "Product teams, small agencies, and internal tools that need a workspace people will actually open every day — not a pitch deck about a workspace.",
+        ],
+      },
+    ],
+    closingThought: "NEURAL isn't trying to impress anyone. It's trying to get out of the way.",
+  },
+  {
+    slug: "nexora-a-landing-page-that-doesnt-lie",
+    templateSlug: "nexora",
+    eyebrow: "SaaS / AI Workspace",
+    headline: "A Landing Page That Doesn't Lie",
+    excerpt:
+      "Every AI product promises 'your intelligent workspace.' NEXORA is built so the dashboard underneath actually backs that up.",
+    date: "2026-05-24",
+    readingTime: "4 min read",
+    philosophy: "If the hero says 'intelligent workspace,' the product behind it should look like one.",
+    intro:
+      "A lot of AI landing pages are basically fiction — a slick hero sitting on top of a product that doesn't exist yet, or exists but looks nothing like the screenshot. NEXORA started as a reaction to that: build the workspace first, then let the homepage describe it honestly.",
+    sections: [
+      {
+        heading: "The Idea",
+        paragraphs: [
+          "NEXORA pairs a confident marketing hero with a real-feeling in-app preview right underneath it, so a visitor sees the actual thing they'd be signing up for, not a mockup that's prettier than the truth.",
+          "The workspace itself covers what an AI product actually needs — Studio, Chat, Documents, Automations — instead of pretending one chat window is the whole product.",
+        ],
+      },
+      {
+        heading: "The Visual Language",
+        paragraphs: [
+          "Near-black background, one lime accent, and not much else. It reads as confident rather than loud, which is harder to pull off than adding more color.",
+          "The lime only ever shows up on things that matter — the primary CTA, the active tab, a stat trending up. If everything were lime, none of it would mean anything.",
+        ],
+      },
+      {
+        heading: "The Interaction",
+        paragraphs: [
+          "Usage numbers — AI requests, documents created, credits remaining — sit right on the dashboard instead of being buried in a billing page. It's a small trust signal: this product isn't hiding how much you're actually using it.",
+        ],
+      },
+      {
+        heading: "Who It Is For",
+        paragraphs: [
+          "AI tools, automation platforms, and workspace products that need their first real site — something that can sit next to the actual product without embarrassing it.",
+        ],
+      },
+    ],
+    closingThought: "NEXORA sells the workspace by showing it, not by describing it.",
+  },
 ];
 
 export function getTemplateStoryBySlug(slug: string): TemplateStory | undefined {

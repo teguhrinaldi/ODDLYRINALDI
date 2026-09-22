@@ -38,6 +38,9 @@ export default function BrowserPreview() {
   const reduce = useReducedMotion();
   const [near, setNear] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  // Matches the typical screen-recording ratio of the hero videos, so the
+  // frame doesn't jump on first paint before metadata loads.
+  const [videoRatio, setVideoRatio] = useState(1908 / 910);
 
   const { scrollY } = useScroll();
   const floatY = useTransform(scrollY, [0, 700], [0, -26]);
@@ -109,7 +112,10 @@ export default function BrowserPreview() {
               <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
             </div>
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#2a2320] via-[#1c1815] to-[#0f0d0c]">
+            <div
+              className="relative w-full overflow-hidden bg-gradient-to-br from-[#2a2320] via-[#1c1815] to-[#0f0d0c] transition-[aspect-ratio] duration-500 ease-out"
+              style={{ aspectRatio: videoRatio }}
+            >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active.slug}
@@ -131,23 +137,14 @@ export default function BrowserPreview() {
                         ? () => setActiveIndex((i) => (i + 1) % showcaseTemplates.length)
                         : undefined
                     }
+                    onLoadedMetadata={(e) => {
+                      const v = e.currentTarget;
+                      if (v.videoWidth && v.videoHeight) {
+                        setVideoRatio(v.videoWidth / v.videoHeight);
+                      }
+                    }}
                     className="h-full w-full object-cover"
                   />
-                  <div
-                    className="pointer-events-none absolute inset-0"
-                    style={{
-                      background:
-                        "linear-gradient(180deg, rgba(15,13,12,0.15) 0%, rgba(15,13,12,0.05) 45%, rgba(15,13,12,0.65) 100%)",
-                    }}
-                  />
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-                    <p className="font-serif text-5xl italic tracking-wide text-[#f2e9dd] drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-6xl">
-                      {active.name}
-                    </p>
-                    <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.25em] text-[#f2e9dd]/70">
-                      {active.category}
-                    </p>
-                  </div>
                 </motion.div>
               </AnimatePresence>
             </div>

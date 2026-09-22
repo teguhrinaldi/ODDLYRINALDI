@@ -123,7 +123,7 @@ export default function Hero() {
             brands, dreamers, and digital explorers.
             <br />
             <br />
-            10 unique templates. 10 different worlds. One collection.
+            12 unique templates. 12 different worlds. One collection.
           </motion.p>
 
           <motion.div
