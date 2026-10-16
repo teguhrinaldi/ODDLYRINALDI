@@ -117,3 +117,8 @@ body {
     animation: none !important;
   }
 }
+
+/* Opening curtain: skip it entirely when it already played this session (see src/data/intro.ts). */
+html[data-intro-seen] .intro-curtain {
+  display: none;
+}

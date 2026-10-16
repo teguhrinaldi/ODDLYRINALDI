@@ -42,7 +42,7 @@ export default function TemplatesPage() {
           </div>
         </section>
 
-        <section className="border-t border-ink/10 bg-cream pb-20 sm:pb-24">
+        <section className="border-t border-ink/10 bg-cream pt-12 pb-20 sm:pt-16 sm:pb-24">
           <div className="mx-auto max-w-350 px-5 sm:px-8 lg:px-12">
             <ul className="flex flex-wrap gap-x-6 gap-y-12 sm:gap-x-7">
               {templates.map((t) => (

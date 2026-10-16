@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Caveat, Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import CustomCursor from "@/components/CustomCursor";
+import LivelyCritters from "@/components/LivelyCritters";
+import IntroCurtain from "@/components/IntroCurtain";
+import { introSeenScript } from "@/data/intro";
 import { site } from "@/data/site";
 
 const display = Bricolage_Grotesque({
@@ -43,10 +46,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${display.variable} ${hand.variable} ${sans.variable} ${serif.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: introSeenScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans overflow-x-hidden">
+        <IntroCurtain />
         <CustomCursor />
         {children}
+        <LivelyCritters />
       </body>
     </html>
   );
