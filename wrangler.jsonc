@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "oddlyrinaldi",
+  "compatibility_date": "2026-10-01",
+  // Cloudflare Pages project: serves the static `next build` output
+  // (`output: "export"`) at https://oddlyrinaldi.pages.dev.
+  // Pages maps /about -> about.html and unknown paths -> 404.html itself.
+  "pages_build_output_dir": "./out"
+}

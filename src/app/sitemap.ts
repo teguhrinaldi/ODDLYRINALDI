@@ -3,6 +3,8 @@ import { templates } from "@/data/templates";
 import { journalArticles, templateStories } from "@/data/journal";
 import { site } from "@/data/site";
 
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
     "",
