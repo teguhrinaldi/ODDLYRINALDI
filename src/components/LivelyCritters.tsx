@@ -10,7 +10,9 @@ import { usePathname } from "next/navigation";
  * - a house gecko (cicak) that roams its section in quick dashes and
  *   freezes, stalks and eats flies, and scurries away from the cursor;
  * - flies that buzz around, land now and then, and respawn after being eaten;
- * - butterflies in the brand palette that flutter across the section.
+ * - butterflies in the brand palette that flutter across the section;
+ * - ladybugs that crawl and take off, ant trails, snails along the bottom
+ *   edge, spiders dangling from the top, bees, and darting dragonflies.
  *
  * Each top-level `main > section` (and the footer) gets its own canvas, so
  * the critters scroll with the content. Only on-screen sections animate.
@@ -44,6 +46,7 @@ type World = { w: number; h: number; pointer: Vec | null; flies: Fly[] };
 /* ------------------------------------------------------------------ */
 
 class Fly {
+  readonly layer = 2;
   pos: Vec = { x: 0, y: 0 };
   vel: Vec = { x: 0, y: 0 };
   home: Vec = { x: 0, y: 0 };
@@ -182,6 +185,7 @@ type Foot = {
 type GeckoMode = "dash" | "freeze" | "flee" | "hunt";
 
 class Gecko {
+  readonly layer = 1;
   s: number;
   seg: number;
   spine: Vec[];
@@ -534,6 +538,7 @@ class Gecko {
 /* ------------------------------------------------------------------ */
 
 class Butterfly {
+  readonly layer = 2;
   pos: Vec = { x: 0, y: 0 };
   heading = 0;
   turn = 0;
@@ -637,6 +642,782 @@ class Butterfly {
 
 
 /* ------------------------------------------------------------------ */
+/* Shared critter plumbing                                             */
+/* ------------------------------------------------------------------ */
+
+/** Anything that lives in a section. Lower layers are drawn first. */
+type Critter = {
+  layer: number;
+  update(dt: number, world: World): void;
+  draw(ctx: CanvasRenderingContext2D): void;
+};
+
+const LADYBUG_RED = "#e8412c";
+const SHELL_COLORS = ["#ff8a3d", "#ffd928", "#8c5cff", "#ff735e"];
+
+const pointerNear = (world: World, p: Vec, r: number) => !!world.pointer && dist(world.pointer, p) < r;
+const randomInside = (world: World, margin = 0.1): Vec => ({
+  x: rand(margin, 1 - margin) * world.w,
+  y: rand(margin, 1 - margin) * world.h,
+});
+
+/** Turn a heading back toward the middle once it gets close to an edge. */
+function steerFromEdges(pos: Vec, heading: number, world: World, margin: number, maxTurn: number) {
+  const inside =
+    pos.x > margin && pos.x < world.w - margin && pos.y > margin && pos.y < world.h - margin;
+  if (inside) return heading;
+  const toCenter = Math.atan2(world.h / 2 - pos.y, world.w / 2 - pos.x);
+  return heading + clamp(angleDiff(heading, toCenter), -maxTurn, maxTurn);
+}
+
+/* ------------------------------------------------------------------ */
+/* Ladybug: crawls, pauses, and now and then flies off somewhere else  */
+/* ------------------------------------------------------------------ */
+
+class Ladybug {
+  readonly layer = 1;
+  pos: Vec;
+  heading = rand(0, TAU);
+  turn = 0;
+  walk = 0;
+  mode: "crawl" | "pause" | "fly" = "crawl";
+  timer = rand(2, 5);
+  from: Vec = { x: 0, y: 0 };
+  to: Vec = { x: 0, y: 0 };
+  flight = 0;
+  flightDur = 1;
+
+  constructor(world: World) {
+    this.pos = randomInside(world, 0.15);
+  }
+
+  private takeOff(world: World) {
+    this.mode = "fly";
+    this.from = { ...this.pos };
+    this.to = randomInside(world, 0.12);
+    this.flight = 0;
+    this.flightDur = clamp(dist(this.from, this.to) / 160, 0.8, 2.2);
+    this.heading = Math.atan2(this.to.y - this.from.y, this.to.x - this.from.x);
+  }
+
+  update(dt: number, world: World) {
+    this.timer -= dt;
+    if (this.mode === "fly") {
+      this.flight += dt / this.flightDur;
+      const t = Math.min(1, this.flight);
+      const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+      this.pos = lerp(this.from, this.to, e);
+      if (t >= 1) {
+        this.mode = "pause";
+        this.timer = rand(0.8, 2);
+      }
+      return;
+    }
+    if (pointerNear(world, this.pos, 60)) {
+      this.takeOff(world);
+      return;
+    }
+    if (this.mode === "pause") {
+      if (this.timer <= 0) {
+        this.mode = "crawl";
+        this.timer = rand(3, 7);
+      }
+      return;
+    }
+    if (this.timer <= 0) {
+      if (Math.random() < 0.3) {
+        this.takeOff(world);
+      } else {
+        this.mode = "pause";
+        this.timer = rand(0.8, 2.5);
+      }
+      return;
+    }
+    this.turn = (this.turn + rand(-1, 1) * dt * 6) * (1 - dt * 1.5);
+    this.heading = steerFromEdges(this.pos, this.heading + this.turn * dt, world, 30, dt * 3);
+    this.walk += dt * 14;
+    this.pos.x += Math.cos(this.heading) * 22 * dt;
+    this.pos.y += Math.sin(this.heading) * 22 * dt;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    const flying = this.mode === "fly";
+    const lift = flying ? Math.sin(Math.min(1, this.flight) * Math.PI) : 0;
+
+    ctx.fillStyle = `rgba(0, 0, 0, ${0.12 - lift * 0.06})`;
+    ctx.beginPath();
+    ctx.ellipse(this.pos.x + lift * 6, this.pos.y + 2 + lift * 10, 7, 5.5, this.heading, 0, TAU);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(this.pos.x, this.pos.y);
+    ctx.rotate(this.heading);
+    const sc = 1 + lift * 0.25;
+    ctx.scale(sc, sc);
+    ctx.strokeStyle = INK;
+    ctx.lineCap = "round";
+
+    if (!flying) {
+      ctx.lineWidth = 1;
+      for (const i of [-1, 0, 1]) {
+        for (const side of [-1, 1]) {
+          const sw = this.mode === "crawl" ? Math.sin(this.walk + i * 2 + (side > 0 ? Math.PI : 0)) * 1.2 : 0;
+          ctx.beginPath();
+          ctx.moveTo(i * 3, side * 3);
+          ctx.lineTo(i * 3.5 + sw, side * 8);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Head with little white eyes.
+    ctx.fillStyle = INK;
+    ctx.beginPath();
+    ctx.arc(6, 0, 3.2, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(7.4, side * 1.6, 0.8, 0, TAU);
+      ctx.fill();
+    }
+
+    // Gauzy hind wings peek out from under the shell while flying.
+    if (flying) {
+      ctx.fillStyle = `rgba(220, 230, 245, ${0.45 + Math.sin(this.flight * 160) * 0.2})`;
+      ctx.strokeStyle = "rgba(17, 17, 17, 0.4)";
+      ctx.lineWidth = 0.8;
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.ellipse(-3, side * 8, 8, 3.5, side * 0.5, 0, TAU);
+        ctx.fill();
+        ctx.stroke();
+      }
+    }
+
+    // Wing cases: two halves that split open in flight.
+    const open = flying ? 0.55 : 0;
+    for (const side of [-1, 1]) {
+      ctx.save();
+      ctx.rotate(side * open);
+      ctx.beginPath();
+      ctx.ellipse(-1, 0, 7, 6, 0, side > 0 ? 0 : Math.PI, side > 0 ? Math.PI : TAU);
+      ctx.closePath();
+      ctx.fillStyle = LADYBUG_RED;
+      ctx.fill();
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.fillStyle = INK;
+      for (const [sx, sy, r] of [[1, 3.4, 1.3], [-4, 2.2, 1.1], [-6, 1.5, 0.9]]) {
+        ctx.beginPath();
+        ctx.arc(sx, side * sy, r, 0, TAU);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Ant trail: a column of ants marching along a curvy path             */
+/* ------------------------------------------------------------------ */
+
+type Ant = { d: number; carry: boolean; push: Vec; phase: number };
+
+const ANT_SPEED = 34;
+const ANT_GAP = 220; // off-path distance before the column loops back in
+
+class AntTrail {
+  readonly layer = 0;
+  pts: Vec[] = [];
+  cum: number[] = [];
+  length = 1;
+  builtW = 0;
+  ants: Ant[];
+
+  constructor(world: World, count: number) {
+    this.build(world);
+    this.ants = Array.from({ length: count }, (_, i) => ({
+      d: i * 20 + rand(0, 8),
+      carry: Math.random() < 0.35,
+      push: { x: 0, y: 0 },
+      phase: rand(0, TAU),
+    }));
+  }
+
+  private build(world: World) {
+    const { w, h } = world;
+    const ltr = Math.random() < 0.5;
+    const p0 = { x: ltr ? -20 : w + 20, y: rand(0.2, 0.8) * h };
+    const p1 = { x: w * (ltr ? 0.33 : 0.67), y: rand(0.1, 0.9) * h };
+    const p2 = { x: w * (ltr ? 0.67 : 0.33), y: rand(0.1, 0.9) * h };
+    const p3 = { x: ltr ? w + 20 : -20, y: rand(0.2, 0.8) * h };
+    this.pts = [];
+    this.cum = [0];
+    const n = 120;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const u = 1 - t;
+      const p = {
+        x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+        y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
+      };
+      if (i > 0) this.cum.push(this.cum[i - 1] + dist(this.pts[i - 1], p));
+      this.pts.push(p);
+    }
+    this.length = this.cum[n];
+    this.builtW = w;
+  }
+
+  private at(d: number) {
+    let i = 1;
+    while (i < this.cum.length - 1 && this.cum[i] < d) i++;
+    const a = this.pts[i - 1];
+    const b = this.pts[i];
+    const seg = this.cum[i] - this.cum[i - 1] || 1;
+    return { p: lerp(a, b, (d - this.cum[i - 1]) / seg), angle: Math.atan2(b.y - a.y, b.x - a.x) };
+  }
+
+  update(dt: number, world: World) {
+    if (Math.abs(world.w - this.builtW) > 40) this.build(world);
+    const loop = this.length + ANT_GAP;
+    for (const ant of this.ants) {
+      ant.d = (ant.d + ANT_SPEED * dt) % loop;
+      ant.phase += dt * 18;
+      if (ant.d > this.length) continue;
+      const { p } = this.at(ant.d);
+      const at = { x: p.x + ant.push.x, y: p.y + ant.push.y };
+      if (world.pointer && pointerNear(world, at, 55)) {
+        // Scatter away from the cursor, then file back into line.
+        const a = Math.atan2(at.y - world.pointer.y, at.x - world.pointer.x);
+        ant.push.x = clamp(ant.push.x + Math.cos(a) * 160 * dt, -28, 28);
+        ant.push.y = clamp(ant.push.y + Math.sin(a) * 160 * dt, -28, 28);
+      } else {
+        ant.push.x *= 1 - Math.min(1, dt * 1.5);
+        ant.push.y *= 1 - Math.min(1, dt * 1.5);
+      }
+    }
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    for (const ant of this.ants) {
+      if (ant.d > this.length) continue;
+      const { p, angle } = this.at(ant.d);
+      ctx.save();
+      ctx.translate(p.x + ant.push.x, p.y + ant.push.y + Math.sin(ant.phase * 0.3) * 0.8);
+      ctx.rotate(angle);
+      ctx.strokeStyle = INK;
+      ctx.fillStyle = INK;
+      ctx.lineCap = "round";
+      ctx.lineWidth = 0.9;
+      for (const i of [-1, 0, 1]) {
+        for (const side of [-1, 1]) {
+          ctx.beginPath();
+          ctx.moveTo(i * 2, 0);
+          ctx.lineTo(i * 2.6 + Math.sin(ant.phase + i + side) * 1.2, side * 4.2);
+          ctx.stroke();
+        }
+      }
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(4, side * 0.6);
+        ctx.lineTo(6.5, side * 2.3);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.ellipse(-4, 0, 2.8, 2.1, 0, 0, TAU);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 1.6, 1.1, 0, 0, TAU);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(3, 0, 1.6, 0, TAU);
+      ctx.fill();
+      if (ant.carry) {
+        ctx.fillStyle = "#ffd928";
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.arc(6.2, 0, 1.9, 0, TAU);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Snail: inches along the bottom edge, hides in its shell if poked    */
+/* ------------------------------------------------------------------ */
+
+class Snail {
+  readonly layer = 0;
+  x: number;
+  y = 0;
+  w = 0;
+  dir: 1 | -1;
+  t = rand(0, TAU);
+  hide = 0;
+  hideTimer = 0;
+  shell: string;
+
+  constructor(world: World) {
+    this.x = rand(0.1, 0.9) * world.w;
+    this.dir = Math.random() < 0.5 ? 1 : -1;
+    this.shell = SHELL_COLORS[Math.floor(Math.random() * SHELL_COLORS.length)];
+  }
+
+  update(dt: number, world: World) {
+    this.w = world.w;
+    this.y = world.h - 3;
+    if (pointerNear(world, { x: this.x, y: this.y - 10 }, 70)) this.hideTimer = 2.5;
+    else this.hideTimer -= dt;
+    const target = this.hideTimer > 0 ? 1 : 0;
+    this.hide += (target - this.hide) * Math.min(1, dt * (target ? 10 : 2));
+    if (this.hide < 0.1) {
+      this.t += dt * 2.2;
+      this.x += this.dir * (6 + 10 * (0.5 + 0.5 * Math.sin(this.t))) * dt;
+    }
+    if (this.x > world.w + 40) this.x = -40;
+    if (this.x < -40) this.x = world.w + 40;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    const { x, y, dir, hide } = this;
+
+    // Slime trail fading out behind it.
+    const tail = x - dir * 140;
+    const g = ctx.createLinearGradient(tail, y, x, y);
+    g.addColorStop(0, "rgba(160, 180, 215, 0)");
+    g.addColorStop(1, "rgba(160, 180, 215, 0.4)");
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(tail, y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(dir, 1);
+    const out = 1 - hide;
+    const stretch = 1 + 0.12 * Math.sin(this.t) * out;
+
+    if (out > 0.05) {
+      // Foot and head.
+      ctx.fillStyle = "#d9c7a7";
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.ellipse(-1, -3, 15 * stretch * (0.4 + 0.6 * out), 3.5, 0, 0, TAU);
+      ctx.fill();
+      ctx.stroke();
+      const hx = 12 * stretch * out;
+      ctx.beginPath();
+      ctx.arc(hx, -5, 3.6, 0, TAU);
+      ctx.fill();
+      ctx.stroke();
+      // Eye stalks.
+      if (out > 0.4) {
+        ctx.lineWidth = 1.2;
+        for (const [bx, tx, ty] of [[hx + 1, hx + 4, -14], [hx - 1, hx + 0.5, -13]]) {
+          const top = -7 + (ty + 7) * out;
+          ctx.beginPath();
+          ctx.moveTo(bx, -7);
+          ctx.lineTo(tx, top);
+          ctx.stroke();
+          ctx.fillStyle = INK;
+          ctx.beginPath();
+          ctx.arc(tx, top, 1.5, 0, TAU);
+          ctx.fill();
+        }
+      }
+    }
+
+    // Shell with a spiral.
+    ctx.fillStyle = this.shell;
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(-3, -11, 9, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    for (let a = 0; a <= Math.PI * 3.5; a += 0.2) {
+      const r = 7.5 - (a / (Math.PI * 3.5)) * 7;
+      const px = -3 + Math.cos(a) * r;
+      const py = -11 + Math.sin(a) * r;
+      if (a === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Spider: drops in on a thread, dangles, and climbs back up           */
+/* ------------------------------------------------------------------ */
+
+class Spider {
+  readonly layer = 3;
+  x = 0;
+  len = -15;
+  target = 0;
+  mode: "wait" | "down" | "hang" | "up" = "wait";
+  timer = rand(0.5, 3);
+  swing = 0;
+  legs = 0;
+  flee = false;
+
+  private get pos(): Vec {
+    const sway = Math.sin(this.swing) * 0.08;
+    return { x: this.x + Math.sin(sway) * this.len, y: Math.cos(sway) * this.len };
+  }
+
+  update(dt: number, world: World) {
+    this.timer -= dt;
+    if ((this.mode === "down" || this.mode === "hang") && pointerNear(world, this.pos, 70)) {
+      this.mode = "up";
+      this.flee = true;
+    }
+    switch (this.mode) {
+      case "wait":
+        if (this.timer <= 0) {
+          this.x = rand(0.1, 0.9) * world.w;
+          this.target = clamp(rand(0.25, 0.6) * Math.min(world.h, 600), 40, world.h - 30);
+          this.swing = 0;
+          this.mode = "down";
+        }
+        break;
+      case "down":
+        this.len += 60 * dt;
+        this.legs += dt * 10;
+        if (this.len >= this.target) {
+          this.mode = "hang";
+          this.timer = rand(2, 5);
+        }
+        break;
+      case "hang":
+        this.swing += dt * 1.6;
+        this.len = this.target + Math.sin(this.swing * 1.3) * 3;
+        if (this.timer <= 0) this.mode = "up";
+        break;
+      case "up":
+        this.len -= (this.flee ? 220 : 90) * dt;
+        this.legs += dt * 14;
+        if (this.len <= -15) {
+          this.len = -15;
+          this.mode = "wait";
+          this.flee = false;
+          this.timer = rand(3, 8);
+        }
+        break;
+    }
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    if (this.mode === "wait") return;
+    const { x, y } = this.pos;
+
+    ctx.strokeStyle = "rgba(17, 17, 17, 0.45)";
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(this.x, 0);
+    ctx.lineTo(x, y - 4);
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1.1;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    for (let i = 0; i < 4; i++) {
+      const a = -0.9 + i * 0.6 + Math.sin(this.legs + i * 1.3) * 0.15;
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(side * Math.cos(a) * 6, Math.sin(a) * 6 - 3);
+        ctx.lineTo(side * Math.cos(a) * 10, Math.sin(a) * 10 + 2);
+        ctx.stroke();
+      }
+    }
+    ctx.fillStyle = INK;
+    ctx.beginPath();
+    ctx.arc(0, 3, 5, 0, TAU);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, -2.5, 3.3, 0, TAU);
+    ctx.fill();
+    // Big cartoon eyes.
+    for (const side of [-1, 1]) {
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(side * 1.4, -2.6, 1.4, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = INK;
+      ctx.beginPath();
+      ctx.arc(side * 1.4, -2.2, 0.65, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Bee: loops in lazy figure-eights around a drifting spot             */
+/* ------------------------------------------------------------------ */
+
+class Bee {
+  readonly layer = 2;
+  home: Vec;
+  goal: Vec;
+  pos: Vec;
+  t = rand(0, 100);
+  angle = 0;
+  wing = 0;
+  r = rand(18, 30);
+
+  constructor(world: World) {
+    this.home = randomInside(world, 0.15);
+    this.goal = { ...this.home };
+    this.pos = { ...this.home };
+  }
+
+  update(dt: number, world: World) {
+    this.t += dt;
+    this.wing += dt;
+    if (dist(this.home, this.goal) < 10) this.goal = randomInside(world, 0.12);
+    const toGoal = Math.atan2(this.goal.y - this.home.y, this.goal.x - this.home.x);
+    this.home.x += Math.cos(toGoal) * 35 * dt;
+    this.home.y += Math.sin(toGoal) * 35 * dt;
+    if (world.pointer && pointerNear(world, this.home, 90)) {
+      const a = Math.atan2(this.home.y - world.pointer.y, this.home.x - world.pointer.x);
+      this.home.x += Math.cos(a) * 120 * dt;
+      this.home.y += Math.sin(a) * 120 * dt;
+    }
+    const prev = this.pos;
+    this.pos = {
+      x: this.home.x + Math.sin(this.t * 2.1) * this.r,
+      y: this.home.y + Math.sin(this.t * 4.2) * this.r * 0.5 + Math.sin(this.t * 1.3) * 4,
+    };
+    if (dist(prev, this.pos) > 0.01) this.angle = Math.atan2(this.pos.y - prev.y, this.pos.x - prev.x);
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.translate(this.pos.x, this.pos.y);
+    ctx.rotate(this.angle);
+
+    ctx.fillStyle = INK;
+    ctx.beginPath();
+    ctx.moveTo(-6.2, -1);
+    ctx.lineTo(-9.2, 0);
+    ctx.lineTo(-6.2, 1);
+    ctx.fill();
+
+    // Striped body.
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 6.5, 4.2, 0, 0, TAU);
+    ctx.fillStyle = "#ffd928";
+    ctx.fill();
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = INK;
+    ctx.fillRect(-3.2, -5, 1.8, 10);
+    ctx.fillRect(0.4, -5, 1.8, 10);
+    ctx.restore();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+
+    ctx.fillStyle = INK;
+    ctx.beginPath();
+    ctx.arc(6.6, 0, 2.6, 0, TAU);
+    ctx.fill();
+
+    // Blurry wings on top.
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.55 + Math.sin(this.wing * 120) * 0.25})`;
+    ctx.strokeStyle = "rgba(17, 17, 17, 0.5)";
+    ctx.lineWidth = 0.8;
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.ellipse(-0.5, side * 4.5, 4.2, 2.6, side * 0.45, 0, TAU);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Dragonfly: hovers in place, then darts somewhere else in a blink    */
+/* ------------------------------------------------------------------ */
+
+class Dragonfly {
+  readonly layer = 2;
+  pos: Vec;
+  from: Vec = { x: 0, y: 0 };
+  to: Vec = { x: 0, y: 0 };
+  mode: "hover" | "dart" = "hover";
+  timer = rand(0.5, 2);
+  t = 0;
+  dur = 0.4;
+  angle = rand(0, TAU);
+  wing = rand(0, 10);
+
+  constructor(world: World) {
+    this.pos = randomInside(world, 0.15);
+  }
+
+  private dart(world: World) {
+    let a = this.angle + rand(-1.3, 1.3);
+    if (world.pointer && pointerNear(world, this.pos, 90)) {
+      a = Math.atan2(this.pos.y - world.pointer.y, this.pos.x - world.pointer.x) + rand(-0.4, 0.4);
+    }
+    const d = rand(80, 220);
+    const m = 30;
+    this.from = { ...this.pos };
+    this.to = {
+      x: clamp(this.pos.x + Math.cos(a) * d, m, Math.max(m, world.w - m)),
+      y: clamp(this.pos.y + Math.sin(a) * d, m, Math.max(m, world.h - m)),
+    };
+    this.angle = Math.atan2(this.to.y - this.from.y, this.to.x - this.from.x);
+    this.dur = dist(this.from, this.to) / 450 + 0.1;
+    this.t = 0;
+    this.mode = "dart";
+  }
+
+  update(dt: number, world: World) {
+    this.wing += dt;
+    this.timer -= dt;
+    if (this.mode === "hover") {
+      this.pos.x += Math.sin(this.wing * 3) * 6 * dt;
+      this.pos.y += Math.cos(this.wing * 2.3) * 5 * dt;
+      if (this.timer <= 0 || pointerNear(world, this.pos, 90)) this.dart(world);
+      return;
+    }
+    this.t += dt / this.dur;
+    const t = Math.min(1, this.t);
+    this.pos = lerp(this.from, this.to, 1 - (1 - t) ** 3);
+    if (t >= 1) {
+      this.mode = "hover";
+      this.timer = rand(0.6, 2.2);
+    }
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.translate(this.pos.x, this.pos.y);
+    ctx.rotate(this.angle);
+    ctx.lineCap = "round";
+
+    // Long segmented tail.
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 4.4;
+    ctx.beginPath();
+    ctx.moveTo(-1, 0);
+    ctx.lineTo(-26, 0);
+    ctx.stroke();
+    ctx.strokeStyle = "#4a73ff";
+    ctx.lineWidth = 2.6;
+    ctx.stroke();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 0.8;
+    for (let sx = -6; sx > -25; sx -= 4) {
+      ctx.beginPath();
+      ctx.moveTo(sx, -1.3);
+      ctx.lineTo(sx, 1.3);
+      ctx.stroke();
+    }
+
+    // Four long wings, shimmering.
+    const flicker = Math.sin(this.wing * 80) * 0.12;
+    ctx.fillStyle = "rgba(220, 235, 255, 0.5)";
+    ctx.strokeStyle = "rgba(17, 17, 17, 0.55)";
+    ctx.lineWidth = 0.8;
+    for (const [ax, base] of [[3, 1.45], [-1, 1.8]]) {
+      for (const side of [-1, 1]) {
+        ctx.save();
+        ctx.translate(ax, 0);
+        ctx.rotate(side * (base + flicker));
+        ctx.beginPath();
+        ctx.ellipse(12, 0, 12, 2.6, 0, 0, TAU);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // Thorax and big eyes.
+    ctx.fillStyle = "#4a73ff";
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.ellipse(2, 0, 4, 3, 0, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
+    for (const side of [-1, 1]) {
+      ctx.fillStyle = INK;
+      ctx.beginPath();
+      ctx.arc(6.5, side * 2, 2.3, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(7.1, side * 2.4, 0.7, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Casts                                                               */
+/* ------------------------------------------------------------------ */
+
+type Species =
+  | "gecko" | "fly" | "butterfly" | "ladybug" | "ants" | "snail" | "spider" | "bee" | "dragonfly";
+
+// Sections rotate through these so neighbours always feel different.
+// Every cast with a gecko also has a fly for it to hunt.
+const CASTS: Species[][] = [
+  ["gecko", "fly", "fly", "ladybug"],
+  ["butterfly", "bee", "snail", "butterfly"],
+  ["spider", "ants", "dragonfly"],
+  ["gecko", "fly", "bee", "butterfly"],
+  ["ladybug", "dragonfly", "snail", "ladybug"],
+  ["ants", "spider", "butterfly", "fly"],
+];
+
+function spawnCritter(species: Species, world: World, small: boolean): Critter {
+  switch (species) {
+    case "gecko":
+      return new Gecko(rand(0.2, 0.8) * world.w, rand(0.25, 0.75) * world.h, small ? 0.75 : 0.95);
+    case "fly":
+      return new Fly(world.w, world.h, false);
+    case "butterfly":
+      return new Butterfly(world, true);
+    case "ladybug":
+      return new Ladybug(world);
+    case "ants":
+      return new AntTrail(world, small ? 6 : 9);
+    case "snail":
+      return new Snail(world);
+    case "spider":
+      return new Spider();
+    case "bee":
+      return new Bee(world);
+    case "dragonfly":
+      return new Dragonfly(world);
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Per-section hosts                                                   */
 /* ------------------------------------------------------------------ */
 
@@ -649,8 +1430,7 @@ type Habitat = {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   world: World;
-  geckos: Gecko[];
-  butterflies: Butterfly[];
+  critters: Critter[];
   visible: boolean;
   restorePosition: boolean;
 };
@@ -689,20 +1469,15 @@ function createHabitat(section: HTMLElement, index: number, small: boolean): Hab
 
   const world: World = { w: 1, h: 1, pointer: null, flies: [] };
   const habitat: Habitat = {
-    section, canvas, ctx, world, geckos: [], butterflies: [], visible: false, restorePosition,
+    section, canvas, ctx, world, critters: [], visible: false, restorePosition,
   };
   sizeCanvas(habitat);
 
-  // Rotate through a few casts so neighbouring sections feel different.
-  const cast = index % 3;
-  const geckoScale = small ? 0.75 : 0.95;
-  const spawnGecko = () =>
-    new Gecko(rand(0.2, 0.8) * world.w, rand(0.25, 0.75) * world.h, geckoScale);
-  const flyCount = cast === 0 ? 2 : 1;
-  world.flies = Array.from({ length: small ? 1 : flyCount }, () => new Fly(world.w, world.h, false));
-  if (cast !== 1) habitat.geckos.push(spawnGecko());
-  const butterflyCount = cast === 1 ? (small ? 1 : 2) : cast === 2 && !small ? 1 : 0;
-  habitat.butterflies = Array.from({ length: butterflyCount }, () => new Butterfly(world, true));
+  const cast = CASTS[index % CASTS.length].slice(0, small ? 3 : undefined);
+  habitat.critters = cast
+    .map((species) => spawnCritter(species, world, small))
+    .sort((p, q) => p.layer - q.layer);
+  world.flies = habitat.critters.filter((c): c is Fly => c instanceof Fly);
   return habitat;
 }
 
@@ -746,14 +1521,9 @@ export default function LivelyCritters() {
         } else {
           world.pointer = null;
         }
-        for (const f of world.flies) f.update(dt, world);
-        for (const g of h.geckos) g.update(dt, world);
-        for (const b of h.butterflies) b.update(dt, world);
-
+        for (const c of h.critters) c.update(dt, world);
         ctx.clearRect(0, 0, world.w, world.h);
-        for (const g of h.geckos) g.draw(ctx);
-        for (const f of world.flies) f.draw(ctx);
-        for (const b of h.butterflies) b.draw(ctx);
+        for (const c of h.critters) c.draw(ctx);
       }
       raf = requestAnimationFrame(tick);
     };
