@@ -7,7 +7,7 @@ export const faqs: FaqItem[] = [
 	{
 		question: 'What do I actually get when I buy a template?',
 		answer:
-			'Full source code (Next.js, TypeScript, Tailwind CSS, Framer Motion), a Figma design file, setup documentation, and three months of free updates. Everything is listed on each template\'s detail page under "What\'s included."',
+			'Full source code (Next.js, TypeScript, Tailwind CSS, Framer Motion), setup documentation, and three months of free updates. Everything is listed on each template\'s detail page under "What\'s included."',
 	},
 	{
 		question: 'Can I use a template for a client project?',

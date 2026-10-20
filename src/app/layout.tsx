@@ -4,6 +4,7 @@ import "./globals.css";
 import CustomCursor from "@/components/CustomCursor";
 import LivelyCritters from "@/components/LivelyCritters";
 import IntroCurtain from "@/components/IntroCurtain";
+import { LanguageProvider } from "@/components/LanguageProvider";
 import { introSeenScript } from "@/data/intro";
 import { site } from "@/data/site";
 
@@ -52,10 +53,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: introSeenScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans overflow-x-hidden">
+        <LanguageProvider>
         <IntroCurtain />
         <CustomCursor />
         {children}
         <LivelyCritters />
+        </LanguageProvider>
       </body>
     </html>
   );

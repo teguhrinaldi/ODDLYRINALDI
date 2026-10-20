@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { INTRO_SEEN_KEY } from "@/data/intro";
+import { copy, useLanguage, type Language } from "@/components/LanguageProvider";
 
 const WORD = "ODDLYRINALDI";
-const HOLD_MS = 2100;
 const EASE_CURTAIN = [0.76, 0, 0.24, 1] as const;
 
 type Phase = "show" | "open" | "done";
@@ -17,6 +17,7 @@ type Phase = "show" | "open" | "done";
  */
 export default function IntroCurtain() {
   const reduce = useReducedMotion();
+  const { language, setLanguage } = useLanguage();
   const [phase, setPhase] = useState<Phase>("show");
 
   useEffect(() => {
@@ -30,14 +31,12 @@ export default function IntroCurtain() {
     }
     html.style.overflow = "hidden";
     const skip = () => setPhase((p) => (p === "show" ? "open" : p));
-    const timer = window.setTimeout(skip, reduce ? 900 : HOLD_MS);
     window.addEventListener("keydown", skip);
     return () => {
-      window.clearTimeout(timer);
       window.removeEventListener("keydown", skip);
       html.style.overflow = "";
     };
-  }, [reduce]);
+  }, []);
 
   useEffect(() => {
     if (phase === "done") document.documentElement.style.overflow = "";
@@ -56,7 +55,6 @@ export default function IntroCurtain() {
   return (
     <div
       className="intro-curtain fixed inset-0 z-90"
-      onClick={() => setPhase((p) => (p === "show" ? "open" : p))}
       aria-hidden={open}
     >
       {/* Curtain halves */}
@@ -89,7 +87,7 @@ export default function IntroCurtain() {
           animate={{ opacity: 1, y: 0, rotate: -4 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          Welcome to
+          {copy[language].welcome}
         </motion.p>
 
         <h2 className="mt-1 flex overflow-hidden font-display text-5xl font-extrabold tracking-tight text-cream sm:text-7xl lg:text-8xl">
@@ -119,8 +117,18 @@ export default function IntroCurtain() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 1.2 }}
         >
-          Websites that refuse to sit still
+          {copy[language].tagline}
         </motion.p>
+        <div className="pointer-events-auto mt-9 flex flex-col items-center gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cream/50">{copy[language].choose}</p>
+          <div className="flex gap-3">
+            {(["en", "id"] as const).map((option: Language) => (
+              <button key={option} type="button" onClick={(event) => { event.stopPropagation(); setLanguage(option); setPhase("open"); }} aria-pressed={language === option} className={`rounded-full border px-5 py-2 text-sm font-semibold transition-colors ${language === option ? "border-orange bg-orange text-ink" : "border-cream/30 text-cream hover:border-orange hover:text-orange"}`}>
+                {copy[language][option === "en" ? "english" : "indonesia"]}
+              </button>
+            ))}
+          </div>
+        </div>
       </motion.div>
 
       <motion.p
@@ -129,7 +137,7 @@ export default function IntroCurtain() {
         animate={{ opacity: open ? 0 : 1 }}
         transition={{ duration: 0.4, delay: open ? 0 : 1.4 }}
       >
-        Click anywhere to enter
+        {copy[language].enter}
       </motion.p>
     </div>
   );

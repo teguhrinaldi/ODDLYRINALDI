@@ -136,7 +136,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -194,7 +193,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -249,7 +247,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -304,7 +301,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -359,7 +355,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -414,7 +409,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -472,7 +466,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -527,7 +520,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -582,7 +574,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -637,7 +628,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -693,7 +683,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],
@@ -749,7 +738,6 @@ export const templates: Template[] = [
 		techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
 		included: [
 			'Full source code',
-			'Figma design file',
 			'Setup documentation',
 			'3 months of free updates',
 		],

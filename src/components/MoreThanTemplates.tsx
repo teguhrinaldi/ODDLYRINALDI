@@ -15,6 +15,7 @@ import {
   UnderlineDoodle,
 } from "@/components/ui/Doodles";
 import { features } from "@/data/nav";
+import { copy, useLanguage } from "@/components/LanguageProvider";
 
 const accentClass: Record<string, string> = {
   yellow: "text-yellow",
@@ -27,6 +28,14 @@ const iconByIndex = [FeatureIconQuality, FeatureIconCustom, FeatureIconSupport, 
 
 export default function MoreThanTemplates() {
   const reduce = useReducedMotion();
+  const { language } = useLanguage();
+  const text = copy[language];
+  const featureText = language === "id" ? [
+    ["Kualitas Premium", "Kode rapi, teknologi modern,\ndesain memikat."],
+    ["Mudah Disesuaikan", "Gampang diedit dan dibuat\nsesuai gayamu."],
+    ["Dukungan Langsung", "Kami siap membantu\nsaat kamu butuh."],
+    ["Pembaruan Seumur Hidup", "Jaga websitemu tetap\nsegar dan mutakhir."],
+  ] : features.map(({ title, body }) => [title, body]);
 
   return (
     <>
@@ -57,18 +66,17 @@ export default function MoreThanTemplates() {
                 ✦ More Than Just Templates.
               </HandwrittenNote>
               <h2 className="mt-3 font-hand text-6xl leading-[1.05] text-white sm:text-7xl">
-                More
+                {text.more}
                 <br />
-                Than Just
+                {text.thanJust}
                 <br />
                 <span className="relative inline-block">
-                  Templates.
+                  {text.templates}
                   <UnderlineDoodle className="absolute -bottom-2 left-0 h-3 w-full text-yellow" />
                 </span>
               </h2>
               <p className="mt-8 max-w-sm text-base leading-relaxed text-white/60">
-                It&apos;s a collection of digital identities, ready for you to
-                make your own.
+                {text.digitalIdentities}
               </p>
               <PillButton href="/about" variant="ghost-dark" cursorLabel="about" className="mt-8">
                 About ODDLYRINALDI <span aria-hidden>→</span>
@@ -90,17 +98,17 @@ export default function MoreThanTemplates() {
                     >
                       <Icon className={accentClass[feature.accent]} />
                       <h3 className="mt-4 font-display text-lg font-bold text-white lg:min-h-12 lg:text-base xl:min-h-14 xl:text-lg">
-                        {feature.title}
+                        {featureText[i][0]}
                       </h3>
                       <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-white/55">
-                        {feature.body}
+                        {featureText[i][1]}
                       </p>
                     </motion.div>
                   );
                 })}
               </div>
 
-              <DuckCorner />
+              <DuckCorner language={language} />
             </div>
           </div>
         </div>
@@ -109,7 +117,7 @@ export default function MoreThanTemplates() {
   );
 }
 
-function DuckCorner() {
+function DuckCorner({ language }: { language: "en" | "id" }) {
   const reduce = useReducedMotion();
 
   return (
@@ -124,11 +132,7 @@ function DuckCorner() {
         <span className="absolute -right-6 -top-10 h-36 w-36 rounded-full bg-purple/25 blur-md sm:h-44 sm:w-44" />
         <div className="absolute -left-16 -top-8 hidden text-right sm:block">
           <HandwrittenNote className="text-2xl leading-tight text-white/90" rotate={-4}>
-            Good
-            <br />
-            Vibes
-            <br />
-            Only :)
+            {language === "id" ? copy.id.goodVibes : <>Good<br />Vibes<br />Only :)</>}
           </HandwrittenNote>
         </div>
         <div className="animate-sway">

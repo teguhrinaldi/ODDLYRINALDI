@@ -7,6 +7,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import HandwrittenNote from "@/components/ui/HandwrittenNote";
 import { CurvedArrowDoodle, DashDoodle, SparkleDoodle, StarDoodle } from "@/components/ui/Doodles";
 import { accentHex, Template, templates } from "@/data/templates";
+import { copy, useLanguage } from "@/components/LanguageProvider";
 
 const half = Math.ceil(templates.length / 2);
 const columns = [templates.slice(0, half), templates.slice(half)];
@@ -15,6 +16,8 @@ export default function CollectionIndex() {
   const [hovered, setHovered] = useState<Template | null>(null);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const reduce = useReducedMotion();
+  const { language } = useLanguage();
+  const text = copy[language];
   const listRef = useRef<HTMLDivElement | null>(null);
 
   const handleMove = (e: MouseEvent<HTMLDivElement>) => {
@@ -91,7 +94,7 @@ export default function CollectionIndex() {
                         className="hidden text-sm font-semibold sm:inline-flex sm:items-center sm:gap-2"
                         style={{ color: accentHex[template.accent] }}
                       >
-                        View{" "}
+                        {text.view}{" "}
                         <span aria-hidden>→</span>
                       </motion.span>
                     </Link>

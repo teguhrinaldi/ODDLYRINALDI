@@ -5,11 +5,14 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import HandwrittenNote from "@/components/ui/HandwrittenNote";
 import PillButton from "@/components/ui/PillButton";
-import { CrownDoodle, SparkleDoodle, StarDoodle, UnderlineDoodle } from "@/components/ui/Doodles";
+import { CrownDoodle, SparkleDoodle, StarDoodle } from "@/components/ui/Doodles";
 import { HOW_IT_WORKS, PERSONALITY_TEASER } from "@/data/customWebsite";
+import { copy, useLanguage } from "@/components/LanguageProvider";
 
 export default function CustomWebsitePromo() {
   const reduce = useReducedMotion();
+  const { language } = useLanguage();
+  const text = copy[language];
 
   return (
     <section className="relative overflow-hidden border-t border-ink/10 bg-cream py-20 sm:py-24 lg:py-28">
@@ -27,21 +30,14 @@ export default function CustomWebsitePromo() {
             <div className="flex items-center gap-2">
               <CrownDoodle className="h-6 w-8 text-coral" />
               <HandwrittenNote className="text-lg text-coral" rotate={-2}>
-                A premium service
+                {text.premiumService}
               </HandwrittenNote>
             </div>
             <h2 className="mt-4 font-display text-3xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-4xl">
-              Want something built{" "}
-              <span className="relative inline-block">
-                just for you?
-                <UnderlineDoodle className="absolute -bottom-1 left-0 h-2.5 w-full text-coral/70" />
-              </span>
+              {text.customQuestion}
             </h2>
             <p className="mt-5 max-w-md text-base leading-relaxed text-ink/65">
-              Skip the template. Tell us about your brand, personality, and
-              content in a guided creative brief, and get a custom website
-              designed around exactly that — reviewed by hand, ordered
-              straight through WhatsApp.
+              {text.customDescription}
             </p>
 
             <div className="mt-6 flex flex-wrap gap-2">
@@ -56,7 +52,7 @@ export default function CustomWebsitePromo() {
             </div>
 
             <PillButton href="/custom-website" className="mt-8 py-3.5">
-              Start your brief
+              {text.startBrief}
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </PillButton>
           </motion.div>

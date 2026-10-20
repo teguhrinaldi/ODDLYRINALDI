@@ -9,11 +9,16 @@ import { creator } from "@/data/creator";
 import LottiePlayer from "@/components/ui/LottiePlayer";
 import HandwrittenNote from "@/components/ui/HandwrittenNote";
 import { StarDoodle, SparkleDoodle } from "@/components/ui/Doodles";
+import { copy, useLanguage } from "@/components/LanguageProvider";
 
 const SIGN_OFF = "Still not sitting still.";
 
 export default function Footer() {
   const reduce = useReducedMotion();
+  const { language } = useLanguage();
+  const text = copy[language];
+  const translatedNav = ["Template", "Website Kustom", "Tentang", "Jurnal", "Bantuan"];
+  const translatedLegal = ["Tanya Jawab", "Privasi", "Ketentuan", "Lisensi"];
 
   return (
     <footer className="relative border-t border-ink/10 bg-cream">
@@ -28,10 +33,10 @@ export default function Footer() {
               ODDLYRINALDI
             </p>
             <p className="mt-2 text-sm text-ink/55">
-              Websites that refuse to sit still.
+              {text.tagline}
             </p>
             <HandwrittenNote className="mt-2 inline-block text-base text-ink/45" rotate={-2}>
-              made with a little weird
+              {text.madeWithWeird}
             </HandwrittenNote>
           </div>
 
@@ -44,7 +49,7 @@ export default function Footer() {
                     data-cursor="view"
                     className="relative inline-block pb-0.5 hover:text-ink after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:scale-x-0 after:bg-ink after:transition-transform after:duration-300 hover:after:scale-x-100"
                   >
-                    {link.label}
+                    {language === "id" ? translatedNav[navLinks.indexOf(link)] : link.label}
                   </Link>
                 </li>
               ))}
@@ -78,7 +83,7 @@ export default function Footer() {
             {footerLinks.map((link) => (
               <li key={link.href}>
                 <Link href={link.href} data-cursor="view" className="hover:text-ink">
-                  {link.label}
+                  {language === "id" ? translatedLegal[footerLinks.indexOf(link)] : link.label}
                 </Link>
               </li>
             ))}
@@ -87,7 +92,7 @@ export default function Footer() {
 
         <div className="relative mt-6 flex flex-col gap-2 border-t border-ink/10 pt-6 text-xs text-ink/45 sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 OddlyRinaldi. All rights reserved.</span>
-          <span>{SIGN_OFF}</span>
+          <span>{language === "id" ? text.signOff : SIGN_OFF}</span>
         </div>
       </div>
     </footer>

@@ -7,6 +7,7 @@ import BrowserPreview from "./BrowserPreview";
 import RunningDog from "./RunningDog";
 import HandwrittenNote from "@/components/ui/HandwrittenNote";
 import PillButton from "@/components/ui/PillButton";
+import { copy, useLanguage } from "@/components/LanguageProvider";
 import {
   CircleDoodle,
   CrossDoodle,
@@ -15,7 +16,6 @@ import {
   ScribbleDoodle,
   SparkleDoodle,
   StarDoodle,
-  UnderlineDoodle,
 } from "@/components/ui/Doodles";
 
 const rise = {
@@ -24,6 +24,8 @@ const rise = {
 };
 
 export default function Hero() {
+  const { language } = useLanguage();
+  const text = copy[language];
   const sectionRef = useRef<HTMLElement | null>(null);
   const reduce = useReducedMotion();
 
@@ -88,7 +90,7 @@ export default function Hero() {
         >
           <motion.div variants={rise} transition={{ duration: 0.6 }}>
             <HandwrittenNote className="text-2xl text-coral sm:text-3xl" rotate={-3}>
-              Hello, we&apos;re
+              {text.hello}
             </HandwrittenNote>
           </motion.div>
 
@@ -105,13 +107,7 @@ export default function Hero() {
             transition={{ duration: 0.6 }}
             className="mt-2 font-display text-[clamp(1.75rem,4.6vw,3rem)] font-semibold leading-[1.05] text-ink"
           >
-            Websites that
-            <br />
-            refuse to{" "}
-            <span className="relative inline-block">
-              sit still.
-              <UnderlineDoodle className="absolute -bottom-1 left-0 h-2.5 w-full text-coral/70" />
-            </span>
+            {text.heroTitle}
           </motion.p>
 
           <motion.p
@@ -119,11 +115,7 @@ export default function Hero() {
             transition={{ duration: 0.6 }}
             className="mt-6 max-w-md text-base leading-relaxed text-ink/70"
           >
-            A creative studio crafting premium website templates for bold
-            brands, dreamers, and digital explorers.
-            <br />
-            <br />
-            12 unique templates. 12 different worlds. One collection.
+            {text.heroDescription}
           </motion.p>
 
           <motion.div
@@ -132,12 +124,12 @@ export default function Hero() {
             className="mt-9 flex flex-wrap items-center gap-4"
           >
             <PillButton href="#collection" className="py-3.5">
-              Explore Collection
+              {text.explore}
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </PillButton>
             <PillButton href="/custom-website" variant="outline" cursorLabel="view" className="py-3.5">
               <Sparkles className="h-4 w-4" />
-              Custom Website
+              {text.custom}
             </PillButton>
           </motion.div>
         </motion.div>

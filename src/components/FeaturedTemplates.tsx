@@ -17,8 +17,11 @@ import {
 	StarDoodle,
 } from '@/components/ui/Doodles';
 import { featuredTemplates } from '@/data/templates';
+import { copy, useLanguage } from '@/components/LanguageProvider';
 
 export default function FeaturedTemplates() {
+	const { language } = useLanguage();
+	const text = copy[language];
 	const scrollerRef = useRef<HTMLDivElement | null>(null);
 	const reduce = useReducedMotion();
 
@@ -112,14 +115,11 @@ export default function FeaturedTemplates() {
 							✦ Featured Templates
 						</p>
 						<h2 className="mt-4 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-5xl">
-							12 Templates.
-							<br />
-							12 Personalities.
+							{text.twelve}
 						</h2>
 						<CircleDoodle className="absolute -left-3 bottom-16 hidden h-7 w-7 text-blue/40 md:block" />
 						<p className="mt-5 max-w-sm text-base leading-relaxed text-ink/65">
-							Each template is a complete digital experience, crafted for a
-							specific industry and mood.
+							{text.featuredDescription}
 						</p>
 						<Link
 							href="/#collection"
@@ -133,7 +133,7 @@ export default function FeaturedTemplates() {
 								<ArrowRight className="h-3.5 w-3.5" />
 							</span>
 							<span className="border-b border-ink/30 pb-0.5 transition-colors group-hover:border-ink">
-								Explore All Templates
+								{text.exploreAll}
 							</span>
 						</Link>
 					</motion.div>

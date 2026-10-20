@@ -9,10 +9,12 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import clsx from "clsx";
 import { navLinks } from "@/data/nav";
 import PillButton from "@/components/ui/PillButton";
+import { copy, useLanguage, type Language } from "@/components/LanguageProvider";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { language, setLanguage } = useLanguage();
 
   return (
     <>
@@ -50,7 +52,7 @@ export default function Navbar() {
                     )}
                     data-cursor="view"
                   >
-                    {link.label}
+                    {language === "id" ? ["Template", "Website Kustom", "Tentang", "Jurnal", "Bantuan"][navLinks.findIndex((item) => item.href === link.href)] : link.label}
                   </Link>
                 </li>
               );
@@ -60,7 +62,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             <div className="hidden sm:block">
               <PillButton href="/templates" className="py-2.5">
-                Browse Collection
+                {copy[language].browse}
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </PillButton>
             </div>
@@ -74,6 +76,9 @@ export default function Navbar() {
             >
               {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
+            <div role="group" aria-label={copy[language].language} className="flex rounded-full border border-ink/15 p-1 text-[11px] font-semibold">
+              {(["en", "id"] as const).map((option: Language) => <button key={option} type="button" aria-pressed={language === option} onClick={() => setLanguage(option)} className={`rounded-full px-2.5 py-1 transition-colors ${language === option ? "bg-ink text-cream" : "text-ink/60 hover:text-orange"}`}>{option === "en" ? "EN" : "ID"}</button>)}
+            </div>
           </div>
         </nav>
       </header>
@@ -104,9 +109,9 @@ export default function Navbar() {
                   <Link
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="font-display text-5xl font-extrabold text-ink"
+                    className="font-display text-5xl font-extrabold text-ink transition-colors duration-200 hover:text-orange"
                   >
-                    {link.label}
+                    {language === "id" ? ["Template", "Website Kustom", "Tentang", "Jurnal", "Bantuan"][navLinks.findIndex((item) => item.href === link.href)] : link.label}
                   </Link>
                 </motion.li>
               ))}
@@ -118,7 +123,7 @@ export default function Navbar() {
               className="mt-10 w-fit"
             >
               <PillButton href="/templates" onClick={() => setOpen(false)}>
-                Browse Collection
+                {copy[language].browse}
                 <ArrowRight className="h-4 w-4" />
               </PillButton>
             </motion.div>

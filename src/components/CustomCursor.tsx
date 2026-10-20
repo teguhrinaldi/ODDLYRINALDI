@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
+import Image from "next/image";
 
 function subscribeMediaQuery(query: string, callback: () => void) {
   const mql = window.matchMedia(query);
@@ -29,7 +30,7 @@ const labelMap: Record<string, string> = {
 };
 
 /**
- * Subtle custom cursor: a small dot that expands into a labelled pill when
+ * Custom cat cursor that expands into a labelled pill when
  * hovering elements tagged with `data-cursor="view" | "go" | "hello"`.
  * Disabled entirely on touch devices and when the user prefers reduced motion.
  */
@@ -41,6 +42,7 @@ export default function CustomCursor() {
   const [label, setLabel] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
   const [onDark, setOnDark] = useState(false);
+  const [onIntro, setOnIntro] = useState(false);
 
   const x = useMotionValue(-100);
   const y = useMotionValue(-100);
@@ -63,6 +65,11 @@ export default function CustomCursor() {
         ?.closest<HTMLElement>("[data-cursor-surface]")
         ?.dataset.cursorSurface;
       setOnDark(surface === "dark");
+      const intro = Boolean(
+        document.elementFromPoint(e.clientX, e.clientY)?.closest(".intro-curtain")
+      );
+      setOnIntro(intro);
+      if (intro) setLabel(null);
     };
     const leave = () => setVisible(false);
     const over = (e: PointerEvent) => {
@@ -90,20 +97,29 @@ export default function CustomCursor() {
     <motion.div
       className={
         "pointer-events-none fixed left-0 top-0 z-100 flex items-center justify-center rounded-full transition-colors duration-300 " +
-        (onDark ? "bg-cream text-ink" : "bg-ink text-cream")
+      (label && !onIntro ? (onDark ? "bg-cream text-ink" : "bg-ink text-cream") : "bg-transparent")
       }
       style={{ x: springX, y: springY, translateX: "-50%", translateY: "-50%" }}
       animate={{
-        width: label ? "auto" : 8,
-        height: label ? 32 : 8,
-        paddingInline: label ? 14 : 0,
+        width: onIntro ? 34 : label ? "auto" : 34,
+        height: onIntro ? 34 : label ? 36 : 34,
+        paddingInline: onIntro ? 0 : label ? 8 : 0,
+        gap: label && !onIntro ? 4 : 0,
         opacity: visible ? 1 : 0,
       }}
       transition={{ duration: 0.22, ease: "easeOut" }}
       aria-hidden="true"
     >
-      {label && (
-        <span className="whitespace-nowrap text-[11px] font-semibold tracking-wide">
+      <Image
+        src="/cat-cursor.png"
+        alt=""
+        width={34}
+        height={34}
+        priority
+        className={`h-[34px] w-[34px] shrink-0 object-contain${onIntro || (onDark && !(label && !onIntro)) ? " invert" : ""}`}
+      />
+      {label && !onIntro && (
+        <span className="whitespace-nowrap pr-2 text-[11px] font-semibold tracking-wide">
           {label}
         </span>
       )}

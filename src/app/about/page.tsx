@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PillButton from "@/components/ui/PillButton";
+import StudioContactOptions from "@/components/StudioContactOptions";
 import HandwrittenNote from "@/components/ui/HandwrittenNote";
 import {
   ScribbleDoodle,
@@ -87,13 +87,7 @@ export default function AboutPage() {
                   <PillButton href="/templates" cursorLabel="explore">
                     Explore Templates
                   </PillButton>
-                  <Link
-                    href="/contact"
-                    data-cursor="about"
-                    className="text-sm font-semibold text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink"
-                  >
-                    Contact the studio
-                  </Link>
+                  <StudioContactOptions />
                 </div>
               </div>
             </div>
@@ -284,9 +278,7 @@ export default function AboutPage() {
               <PillButton href="/templates" cursorLabel="explore">
                 Explore Templates
               </PillButton>
-              <PillButton href="/contact" variant="outline" cursorLabel="about">
-                Contact the Studio
-              </PillButton>
+              <StudioContactOptions variant="pill" />
               <PillButton
                 href={creator.portfolioUrl}
                 variant="outline"
