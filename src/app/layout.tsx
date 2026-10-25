@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Caveat, Inter, Playfair_Display } from "next/font/
 import "./globals.css";
 import CustomCursor from "@/components/CustomCursor";
 import LivelyCritters from "@/components/LivelyCritters";
+import InlineScript from "@/components/InlineScript";
 import IntroCurtain from "@/components/IntroCurtain";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { introSeenScript } from "@/data/intro";
@@ -50,7 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: introSeenScript }} />
+        <InlineScript html={introSeenScript} />
       </head>
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans overflow-x-hidden">
         <LanguageProvider>

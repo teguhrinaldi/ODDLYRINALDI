@@ -8,12 +8,14 @@ import {
 	useCallback,
 	useRef,
 	useState,
+	useSyncExternalStore,
 	type ReactNode,
 } from 'react';
 
 export type Language = 'en' | 'id';
 const STORAGE_KEY = 'oddly-language';
 const idText: Record<string, string> = {
+	'Welcome to': 'Selamat datang di',
 	'Back to collection': 'Kembali ke koleksi',
 	'Online Course / Education': 'Kursus Online / Pendidikan',
 	'one-time': 'sekali bayar',
@@ -1238,32 +1240,75 @@ const LanguageContext = createContext<{
 	setLanguage: () => {},
 });
 
+function createLanguagePreferenceStore() {
+	let currentLanguage: Language = 'en';
+	if (typeof window !== 'undefined') {
+		try {
+			const saved = localStorage.getItem(STORAGE_KEY);
+			if (saved === 'id' || saved === 'en') currentLanguage = saved;
+		} catch {
+			// Keep the default language when storage is unavailable.
+		}
+	}
+	const subscribers = new Set<() => void>();
+	const notify = () => subscribers.forEach((subscriber) => subscriber());
+	const handleStorage = (event: StorageEvent) => {
+		if (event.key !== null && event.key !== STORAGE_KEY) return;
+		currentLanguage =
+			event.newValue === 'id' || event.newValue === 'en'
+				? event.newValue
+				: 'en';
+		notify();
+	};
+
+	return {
+		subscribe(subscriber: () => void) {
+			subscribers.add(subscriber);
+			if (subscribers.size === 1) {
+				window.addEventListener('storage', handleStorage);
+			}
+			return () => {
+				subscribers.delete(subscriber);
+				if (subscribers.size === 0) {
+					window.removeEventListener('storage', handleStorage);
+				}
+			};
+		},
+		getSnapshot(): Language {
+			return currentLanguage;
+		},
+		getServerSnapshot: (): Language => 'en',
+		setLanguage(next: Language) {
+			currentLanguage = next;
+			try {
+				localStorage.setItem(STORAGE_KEY, next);
+			} catch {
+				/* preference remains active for this visit */
+			}
+			notify();
+		},
+	};
+}
+
 export function LanguageProvider({
 	children,
 }: {
 	readonly children: ReactNode;
 }) {
-	const [language, setLanguage] = useState<Language>(() => {
-		try {
-			const saved = localStorage.getItem(STORAGE_KEY);
-			return saved === 'id' || saved === 'en' ? saved : 'en';
-		} catch {
-			return 'en';
-		}
-	});
+	const [languageStore] = useState(createLanguagePreferenceStore);
+	const language = useSyncExternalStore(
+		languageStore.subscribe,
+		languageStore.getSnapshot,
+		languageStore.getServerSnapshot,
+	);
 	const originalText = useRef(new WeakMap<Text, string>());
 	const originalAttributes = useRef(
 		new WeakMap<Element, Map<string, string>>(),
 	);
 	const chooseLanguage = useCallback((next: Language) => {
-		setLanguage(next);
-		try {
-			localStorage.setItem(STORAGE_KEY, next);
-		} catch {
-			/* preference remains active for this visit */
-		}
+		languageStore.setLanguage(next);
 		document.documentElement.lang = next;
-	}, []);
+	}, [languageStore]);
 	useEffect(() => {
 		document.documentElement.lang = language;
 	}, [language]);

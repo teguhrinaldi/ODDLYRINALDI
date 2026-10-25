@@ -13,6 +13,15 @@
 # testing
 /coverage
 
+# local Argos Translate setup
+/.venv/
+__pycache__/
+*.py[cod]
+/requirements.txt
+/scripts/translate-id.mjs
+/scripts/translate_id.py
+/src/data/translations/
+
 # next.js
 /.next/
 /out/
